@@ -11,9 +11,22 @@ module.exports.get_all = (req, res) => {
 
 //Crear un nuevo recordatorio
 module.exports.create_recordatorio = (req, res) => {
-    Recordatorio.create(req.body)
-        .then(recordatorio => res.json(recordatorio))
-        .catch(err => {res.status(400).json(err)});
+    Recordatorio.findOne({titulo: req.body.titulo})
+        .then(recordatorio =>{
+            if(recordatorio != null){
+                //Ya existe un recordatorio con ese titulo
+                let err = {"errors": 
+                            {"titulo": 
+                                {"message": "El titulo ya existe"}
+                            }
+                        };
+                res.status(400).json(err);
+            } else {
+                Recordatorio.create(req.body)
+                    .then(recordatorio => res.json(recordatorio))
+                    .catch(err => {res.status(400).json(err)});
+            }
+        })
 }
 
 //Regrese un recordatorio en base a su ID

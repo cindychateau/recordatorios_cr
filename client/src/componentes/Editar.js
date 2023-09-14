@@ -1,31 +1,43 @@
-import React, {useState} from 'react';
-import axios from 'axios';
-import {useNavigate} from 'react-router-dom';
+import React, {useEffect, useState} from "react";
+import axios from "axios";
+import {useNavigate, useParams} from "react-router-dom";
 
-const Nuevo = () => {
+const Editar = () => {
+    const {id} = useParams();
+
     const [titulo, setTitulo] = useState("");
     const [contenido, setContenido] = useState("");
     const [prioridad, setPrioridad] = useState(1);
 
+    const [errors, setErrors] = useState({});
+
     const navigate = useNavigate();
 
-    const [errors, setErrors] = useState({}); //errors.ATRIBUTO.message
+    useEffect(()=>{
+        axios.get("http://localhost:8000/api/recordatorios/"+id)
+            .then(res=> {
+                setTitulo(res.data.titulo);
+                setContenido(res.data.contenido);
+                setPrioridad(res.data.prioridad);
+            })
+            .catch(err => console.log(err));
+    }, [id])
 
-    const guardarRecordatorio = e => {
+    const actualizarRecordatorio = e => {
         e.preventDefault();
-        axios.post("http://localhost:8000/api/recordatorios", {
+        axios.put("http://localhost:8000/api/recordatorios/"+id, {
             titulo,
             contenido,
             prioridad
         })
-            .then(res => navigate("/"))
-            .catch(err => setErrors(err.response.data.errors));
+            .then(res=> navigate("/"))
+            .catch(err=> setErrors(err.response.data.errors));
     }
 
     return (
         <div>
-            <h1>Nuevo Recordatorio</h1>
-            <form onSubmit={guardarRecordatorio}>
+            <h1>Editar Recordatorio</h1>
+            <form onSubmit={actualizarRecordatorio}>
                 <div>
                     <label>Título:</label>
                     <input type="text" id="titulo" value={titulo} onChange={e=>setTitulo(e.target.value)} className='form-control' />
@@ -45,8 +57,6 @@ const Nuevo = () => {
             </form>
         </div>
     )
-
-
 }
 
-export default Nuevo;
+export default Editar;
